@@ -27,8 +27,6 @@ import static javafx.application.Application.launch;
 public class Main extends Application {
 
 
-    private static final String SEARCH_URL = "https://sv.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&utf8=";
-    private static final String ARTICLE_URL = "https://sv.wikipedia.org/w/api.php?action=query&titles={title}&prop=revisions&rvprop=content&format=json&utf8=";
 
     public static final ObservableList data =
             FXCollections.observableArrayList();
