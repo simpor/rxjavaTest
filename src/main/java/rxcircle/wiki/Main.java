@@ -1,6 +1,8 @@
 package rxcircle.wiki;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -28,8 +30,7 @@ import static javafx.application.Application.launch;
 public class Main extends Application {
 
 
-    public static final ObservableList data =
-            FXCollections.observableArrayList();
+    public static final ObservableList data = FXCollections.observableArrayList();
 
     public static void main(String[] args) {
         launch(args);
@@ -49,23 +50,25 @@ public class Main extends Application {
         Label searchLabel = new Label("Search:");
         TextField searchField = new TextField();
 
-        Button searchButton = new Button();
-        searchButton.setText("Say 'Hello World'");
-        searchButton.setOnAction(event -> {
-            try {
-                List<String> result = Wikipedia.searchTitle(searchField.getText());
-                data.clear();
-                data.addAll(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        searchField.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+                                String oldValue, String newValue) {
+
+                try {
+                    List<String> result = Wikipedia.searchTitle(searchField.getText());
+                    data.clear();
+                    data.addAll(result);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }}
         });
 
         final WebView browser = new WebView();
         final WebEngine engine = browser.getEngine();
 
         listView.setOnMouseClicked(event -> {
-            String selectedItem = (String)listView.getSelectionModel().getSelectedItem();
+            String selectedItem = (String) listView.getSelectionModel().getSelectedItem();
             try {
                 String url = Wikipedia.searchArticle(selectedItem);
                 engine.load(url);
@@ -80,7 +83,7 @@ public class Main extends Application {
         mainBorderPane.setCenter(browser);
 
         HBox hb = new HBox();
-        hb.getChildren().addAll(searchLabel, searchField, searchButton);
+        hb.getChildren().addAll(searchLabel, searchField);
         hb.setSpacing(10);
 
         searchBorderPane.setLeft(listView);
