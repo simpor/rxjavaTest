@@ -1,5 +1,9 @@
 package rxcircle.wiki;
 
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,8 +11,7 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Madeleine on 2016-03-26.
@@ -16,11 +19,37 @@ import java.util.List;
 public class Wikipedia {
 
     private static final String SEARCH_URL = "https://sv.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&utf8=";
-    private static final String ARTICLE_URL = "https://sv.wikipedia.org/w/api.php?action=query&titles={title}&prop=revisions&rvprop=content&format=json&utf8=";
+    private static final String PAGEID_URL = "https://sv.wikipedia.org/w/api.php?action=query&titles={query}&prop=revisions&rvprop=content&format=json&utf8=";
 
-    public static List<String> search(String query) throws IOException {
-        URL url = new URL(SEARCH_URL.replace("{query}", query));
-    //    String query = INSERT_HERE_YOUR_URL_PARAMETERS;
+    public static List<String> searchurl(String query) throws Exception {
+        String result = search(query, SEARCH_URL);
+        List<String> resultList = new ArrayList<>();
+        JSONObject root = new JSONObject(result);
+        JSONObject resultQuery = root.getJSONObject("query");
+        JSONArray reultSearch = resultQuery.getJSONArray("search");
+        for (int i = 0; i < reultSearch.length(); i++) {
+            JSONObject searchJson = reultSearch.getJSONObject(i);
+            String title = searchJson.getString("title");
+            System.out.println(title);
+            resultList.add(title);
+        }
+        return resultList;
+    }
+
+    public static String searchArticle(String query) throws Exception {
+        String result = search(query, PAGEID_URL);
+        List<String> resultList = new ArrayList<>();
+        JSONObject root = new JSONObject(result);
+        JSONObject resultQuery = root.getJSONObject("query");
+        JSONObject pages = resultQuery.getJSONObject("pages");
+        Iterator keys = pages.keys();
+        String pageId = keys.next().toString();
+        return "http://sv.wikipedia.org/?curid=" + pageId;
+    }
+
+
+    private static String search(String query, String urlString) throws IOException {
+        URL url = new URL(urlString.replace("{query}", query));
 
         //make connection
         URLConnection urlc = url.openConnection();
@@ -31,21 +60,23 @@ public class Wikipedia {
 
         //send query
         PrintStream ps = new PrintStream(urlc.getOutputStream());
-      //  ps.print(query);
         ps.close();
 
         //get result
-        BufferedReader br = new BufferedReader(new InputStreamReader(urlc
-                .getInputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(urlc.getInputStream()));
         String l = null;
-        while ((l=br.readLine())!=null) {
+        String returnString = "";
+        while ((l = br.readLine()) != null) {
             System.out.println(l);
+            returnString += l;
         }
         br.close();
-        return Collections.emptyList();
+        return returnString;
     }
 
-    public static void main(String[] args) throws IOException {
-        Wikipedia.search("Simon");
+    public static void main(String[] args) throws Exception {
+        Wikipedia.searchurl("Simon");
+        String komet = Wikipedia.searchArticle("Komet");
+        System.out.println(komet);
     }
 }
