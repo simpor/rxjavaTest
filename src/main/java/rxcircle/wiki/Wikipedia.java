@@ -1,14 +1,12 @@
 package rxcircle.wiki;
 
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -21,7 +19,7 @@ public class Wikipedia {
     private static final String SEARCH_URL = "https://sv.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&utf8=";
     private static final String PAGEID_URL = "https://sv.wikipedia.org/w/api.php?action=query&titles={query}&prop=revisions&rvprop=content&format=json&utf8=";
 
-    public static List<String> searchurl(String query) throws Exception {
+    public static List<String> searchTitle(String query) throws Exception {
         String result = search(query, SEARCH_URL);
         List<String> resultList = new ArrayList<>();
         JSONObject root = new JSONObject(result);
@@ -49,7 +47,7 @@ public class Wikipedia {
 
 
     private static String search(String query, String urlString) throws IOException {
-        URL url = new URL(urlString.replace("{query}", query));
+        URL url = new URL(urlString.replace("{query}", query.replace(" ", "%20")));
 
         //make connection
         URLConnection urlc = url.openConnection();
@@ -75,7 +73,7 @@ public class Wikipedia {
     }
 
     public static void main(String[] args) throws Exception {
-        Wikipedia.searchurl("Simon");
+        Wikipedia.searchTitle("Simon");
         String komet = Wikipedia.searchArticle("Komet");
         System.out.println(komet);
     }

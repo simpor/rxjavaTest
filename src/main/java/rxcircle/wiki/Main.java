@@ -18,6 +18,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.util.Date;
+import java.util.List;
 
 import static javafx.application.Application.launch;
 
@@ -25,7 +26,6 @@ import static javafx.application.Application.launch;
  * Created by Madeleine on 2016-03-26.
  */
 public class Main extends Application {
-
 
 
     public static final ObservableList data =
@@ -39,7 +39,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
 
         primaryStage.setTitle("List View Sample");
-
         final ListView listView = new ListView(data);
         listView.setPrefSize(200, 250);
         listView.setEditable(false);
@@ -52,18 +51,28 @@ public class Main extends Application {
 
         Button searchButton = new Button();
         searchButton.setText("Say 'Hello World'");
-        searchButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                data.add("Hej: " + new Date().getTime());
+        searchButton.setOnAction(event -> {
+            try {
+                List<String> result = Wikipedia.searchTitle(searchField.getText());
+                data.clear();
+                data.addAll(result);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
 
-        WebView  browser = new WebView();
-        WebEngine engine = browser.getEngine();
-        String url = "http://www.wikipedia.com/";
-        engine.load(url);
+        final WebView browser = new WebView();
+        final WebEngine engine = browser.getEngine();
+
+        listView.setOnMouseClicked(event -> {
+            String selectedItem = (String)listView.getSelectionModel().getSelectedItem();
+            try {
+                String url = Wikipedia.searchArticle(selectedItem);
+                engine.load(url);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         BorderPane mainBorderPane = new BorderPane();
         BorderPane searchBorderPane = new BorderPane();
