@@ -18,6 +18,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import rx.Observable;
+import rx.observables.ConnectableObservable;
+import rx.observables.JavaFxObservable;
 
 import java.util.Date;
 import java.util.List;
@@ -50,32 +53,18 @@ public class Main extends Application {
         Label searchLabel = new Label("Search:");
         TextField searchField = new TextField();
 
-        searchField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-
-                try {
-                    List<String> result = Wikipedia.searchTitle(searchField.getText());
-                    data.clear();
-                    data.addAll(result);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }}
-        });
-
         final WebView browser = new WebView();
         final WebEngine engine = browser.getEngine();
 
-        listView.setOnMouseClicked(event -> {
-            String selectedItem = (String) listView.getSelectionModel().getSelectedItem();
-            try {
-                String url = Wikipedia.searchArticle(selectedItem);
-                engine.load(url);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+//        listView.setOnMouseClicked(event -> {
+//            String selectedItem = (String) listView.getSelectionModel().getSelectedItem();
+//            try {
+//                String url = Wikipedia.searchArticle(selectedItem);
+//                engine.load(url);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
 
         BorderPane mainBorderPane = new BorderPane();
         BorderPane searchBorderPane = new BorderPane();
@@ -93,5 +82,14 @@ public class Main extends Application {
         root.getChildren().add(mainBorderPane);
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
+
+        Observable<String> stringObservable = JavaFxObservable.fromObservableValue(searchField.textProperty());
+
+
+        stringObservable.subscribe(text -> {
+            List<String> result = Wikipedia.searchTitle(text);
+            data.clear();
+            data.addAll(result);
+        });
     }
 }

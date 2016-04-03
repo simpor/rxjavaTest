@@ -1,6 +1,7 @@
 package rxcircle.wiki;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -19,19 +20,26 @@ public class Wikipedia {
     private static final String SEARCH_URL = "https://sv.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&utf8=";
     private static final String PAGEID_URL = "https://sv.wikipedia.org/w/api.php?action=query&titles={query}&prop=revisions&rvprop=content&format=json&utf8=";
 
-    public static List<String> searchTitle(String query) throws Exception {
-        String result = search(query, SEARCH_URL);
-        List<String> resultList = new ArrayList<>();
-        JSONObject root = new JSONObject(result);
-        JSONObject resultQuery = root.getJSONObject("query");
-        JSONArray reultSearch = resultQuery.getJSONArray("search");
-        for (int i = 0; i < reultSearch.length(); i++) {
-            JSONObject searchJson = reultSearch.getJSONObject(i);
-            String title = searchJson.getString("title");
-            System.out.println(title);
-            resultList.add(title);
+    public static List<String> searchTitle(String query) {
+        try {
+            String result = search(query, SEARCH_URL);
+            List<String> resultList = new ArrayList<>();
+            JSONObject root = new JSONObject(result);
+            JSONObject resultQuery = root.getJSONObject("query");
+            JSONArray reultSearch = resultQuery.getJSONArray("search");
+            for (int i = 0; i < reultSearch.length(); i++) {
+                JSONObject searchJson = reultSearch.getJSONObject(i);
+                String title = searchJson.getString("title");
+                System.out.println(title);
+                resultList.add(title);
+            }
+            return resultList;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        return resultList;
+        return Collections.emptyList();
     }
 
     public static String searchArticle(String query) throws Exception {
