@@ -1,14 +1,12 @@
 package rxcircle.wiki;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -19,21 +17,13 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 import rx.observables.JavaFxObservable;
 import rx.schedulers.JavaFxScheduler;
-
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static javafx.application.Application.launch;
 
 /**
  * Created by Madeleine on 2016-03-26.
  */
 public class Main extends Application {
-
 
     public static final ObservableList data = FXCollections.observableArrayList();
 
@@ -58,16 +48,6 @@ public class Main extends Application {
         final WebView browser = new WebView();
         final WebEngine engine = browser.getEngine();
 
-//        listView.setOnMouseClicked(event -> {
-//            String selectedItem = (String) listView.getSelectionModel().getSelectedItem();
-//            try {
-//                String url = Wikipedia.searchArticle(selectedItem);
-//                engine.load(url);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-
         BorderPane mainBorderPane = new BorderPane();
         BorderPane searchBorderPane = new BorderPane();
         mainBorderPane.setLeft(searchBorderPane);
@@ -86,14 +66,27 @@ public class Main extends Application {
         primaryStage.show();
 
         Observable<String> stringObservable = JavaFxObservable.fromObservableValue(searchField.textProperty()).sample(1, TimeUnit.SECONDS);
-
+        Observable<String> titleObservable = JavaFxObservable.fromObservableValue(listView.getSelectionModel().selectedItemProperty()).map(t -> t.toString()).sample(1, TimeUnit
+                .SECONDS);
 
         stringObservable
                 .observeOn(JavaFxScheduler.getInstance())
                 .subscribe(text -> {
-            List<String> result = Wikipedia.searchTitle(text);
-            data.clear();
-            data.addAll(result);
-        });
+                    List<String> result = Wikipedia.searchTitle(text);
+                    data.clear();
+                    data.addAll(result);
+                });
+
+        titleObservable
+                .observeOn(JavaFxScheduler.getInstance())
+                .subscribe(title -> {
+                    try {
+                        String url = Wikipedia.searchArticle(title);
+                        engine.load(url);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
     }
 }
