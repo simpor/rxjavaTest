@@ -21,9 +21,11 @@ import javafx.stage.Stage;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 import rx.observables.JavaFxObservable;
+import rx.schedulers.JavaFxScheduler;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static javafx.application.Application.launch;
 
@@ -83,10 +85,12 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
 
-        Observable<String> stringObservable = JavaFxObservable.fromObservableValue(searchField.textProperty());
+        Observable<String> stringObservable = JavaFxObservable.fromObservableValue(searchField.textProperty()).sample(1, TimeUnit.SECONDS);
 
 
-        stringObservable.subscribe(text -> {
+        stringObservable
+                .observeOn(JavaFxScheduler.getInstance())
+                .subscribe(text -> {
             List<String> result = Wikipedia.searchTitle(text);
             data.clear();
             data.addAll(result);
