@@ -12,9 +12,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
 
-/**
- * Created by Madeleine on 2016-03-26.
- */
 public class Wikipedia {
 
     private static final String SEARCH_URL = "https://sv.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&utf8=";
